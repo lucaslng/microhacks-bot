@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
-from discord.ui import View, Select
-from discord import SelectOption
+from discord.ui import View, Button
+from discord import ButtonStyle
 from backend.create_itinerary import create_itinerary
 from backend.verify_location import verify_location
 from google import genai
@@ -17,26 +17,6 @@ tree = app_commands.CommandTree(bot_client)
 gemini_client = genai.Client(api_key=gemini_key)
 
 events = {}
-
-class EventSelect(Select):
-    def __init__(self, user_events):
-        options = [
-            SelectOption(label=event["name"], description=event["date"], value=str(idx))
-            for idx, event in enumerate(user_events)
-        ]
-        super().__init__(placeholder="Select an event...", min_values=1, max_values=1, options=options)
-
-    async def callback(self, interaction: discord.Interaction):
-        idx = int(self.values[0])
-        event = events[str(interaction.user.id)][idx]
-        await interaction.response.send_message(
-            f"You selected: {event['name']} on {event['date']}", ephemeral=True
-        )
-
-class EventView(View):
-    def __init__(self, user_events):
-        super().__init__(timeout=60)
-        self.add_item(EventSelect(user_events))
 
 @tree.command(
     description="Create a travel itinerary with your chosen location!",
@@ -82,11 +62,43 @@ async def list_events(interaction: discord.Interaction):
     user_events = events.get(user_id, [])
 
     if not user_events:
-        await interaction.response.send_message("You have no events.")
-        return
-    
-    view = EventView(user_events)
-    await interaction.response.send_message("Choose an event from the dropdown:", view=view)
+        return await interaction.response.send_message("You have no events.")
+
+    selected = set()
+    view = View(timeout=120)
+
+    for idx, ev in enumerate(user_events):
+        label_off = f"[ ] {ev['name']} on {ev['date']}"
+        label_on  = f"[x] {ev['name']} on {ev['date']}"
+        btn = Button(label=label_off, style=ButtonStyle.secondary)
+
+        async def toggle(inter: discord.Interaction, idx=idx, btn=btn):
+            if idx in selected:
+                selected.remove(idx)
+                btn.label = label_off
+            else:
+                selected.add(idx)
+                btn.label = label_on
+            await inter.response.edit_message(view=view)
+
+        btn.callback = toggle
+        view.add_item(btn)
+
+    submit = Button(label="Submit", style=ButtonStyle.primary)
+
+    async def on_submit(inter: discord.Interaction):
+        if not selected:
+            await inter.response.send_message("No events selected.", ephemeral=True)
+            return
+        choices = "\n".join(
+            f"- {user_events[i]['name']} on {user_events[i]['date']}" for i in selected
+        )
+        await inter.response.send_message(f"You selected:\n{choices}", ephemeral=True)
+
+    submit.callback = on_submit
+    view.add_item(submit)
+
+    await interaction.response.send_message("Select events via buttons:", view=view)
 
 @bot_client.event
 async def on_ready():
