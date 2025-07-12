@@ -53,15 +53,16 @@ class EventView(View):
 )
 @app_commands.describe(location="Your travel destination!")
 async def create(interaction: discord.Interaction, location: str):
-  verifiedLocation = verify_location(gemini_client, location)
-  if verifiedLocation is None:
+  verified_location = verify_location(gemini_client, location)
+  if verified_location is None:
     await interaction.response.send_message(f"{location} is not a valid location!")
     print(f"invalid location: {location}")
     return
-  await interaction.response.send_message(f"Creating travel itinerary for {verifiedLocation}...")
-  print(f"Creating travel itinerary for {verifiedLocation}...")
-  itinerary = create_itinerary(gemini_client, verifiedLocation)
+  await interaction.response.send_message(f"Creating travel itinerary for {verified_location}...")
+  print(f"Creating travel itinerary for {verified_location}...")
+  itinerary = create_itinerary(gemini_client, verified_location)
   await interaction.followup.send(itinerary)
+  print(f"Travel itinerary for {verified_location} completed.")
 
 
 @tree.command(
