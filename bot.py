@@ -1,5 +1,7 @@
 import discord
 from discord import app_commands
+from discord.ui import View, Select
+from discord import SelectOption
 from dotenv import load_dotenv
 from backend.create_itinerary import create_itinerary
 from backend.verify_location import verify_location
@@ -23,7 +25,28 @@ gmaps_client = googlemaps.Client(key=gmaps_key)
 gemini_key = getenv("GEMINI_API_KEY")
 gemini_client = genai.Client(api_key=gemini_key)
 
-events = {}  
+
+events = {}
+
+class EventSelect(Select):
+    def __init__(self, user_events):
+        options = [
+            SelectOption(label=event["name"], description=event["date"], value=str(idx))
+            for idx, event in enumerate(user_events)
+        ]
+        super().__init__(placeholder="Select an event...", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        idx = int(self.values[0])
+        event = events[str(interaction.user.id)][idx]
+        await interaction.response.send_message(
+            f"You selected: {event['name']} on {event['date']}", ephemeral=True
+        )
+
+class EventView(View):
+    def __init__(self, user_events):
+        super().__init__(timeout=60)
+        self.add_item(EventSelect(user_events))
 
 @tree.command(
     description="Create a travel itinerary with your chosen location!",
@@ -71,19 +94,8 @@ async def list_events(interaction: discord.Interaction):
         await interaction.response.send_message("You have no events.")
         return
     
-    embed = discord.Embed(title="Your Events")
-    embed.set_author(
-        name=interaction.user.global_name,
-        icon_url=interaction.user.display_avatar.url
-    )
-
-    for event in user_events:
-        embed.add_field(
-            name=event["name"],
-            value=event["date"],
-            inline=False
-        )
-    await interaction.response.send_message(embed=embed)
+    view = EventView(user_events)
+    await interaction.response.send_message("Choose an event from the dropdown:", view=view)
 
 @bot_client.event
 async def on_ready():
