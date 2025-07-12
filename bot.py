@@ -29,9 +29,7 @@ assert project, "GCP_PROJECT_ID environment variable not set"
 location = getenv("GCP_LOCATION", "us-central1")
 gemini_client = genai.Client(vertexai=True, project=project, location=location)
 
-# In-memory event store
-events = []
-
+events = {}  
 
 @tree.command(
     description="Create a travel itinerary with your chosen location!",
@@ -53,9 +51,39 @@ async def create(interaction: discord.Interaction, location: str):
     date="Event date"
 )
 async def add_event(interaction: discord.Interaction, name: str, date: str):
-    events.append({"name": name, "date": date})
-    await interaction.response.send_message(f"Event '{name}' on {date} added!")
+    user_id, user_name= str(interaction.user.id), str(interaction.user.global_name)
 
+    if str(user_id) not in events:
+        events[user_id] = []
+
+    events[user_id].append({"name": name, "date": date})
+    await interaction.response.send_message(f"Event '{name}' on {date} added for {user_name}!")
+
+@tree.command (
+    description="List all of your events",
+    guild=guild
+)
+async def list_events(interaction: discord.Interaction):
+    user_id = str(interaction.user.id)
+    user_events = events.get(user_id, [])
+
+    if not user_events:
+        await interaction.response.send_message("You have no events.")
+        return
+    
+    embed = discord.Embed(title="Your Events")
+    embed.set_author(
+        name=interaction.user.global_name,
+        icon_url=interaction.user.display_avatar.url
+    )
+
+    for event in user_events:
+        embed.add_field(
+            name=event["name"],
+            value=event["date"],
+            inline=False
+        )
+    await interaction.response.send_message(embed=embed)
 
 @bot_client.event
 async def on_ready():
