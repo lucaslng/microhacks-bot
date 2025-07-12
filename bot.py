@@ -2,28 +2,19 @@ import discord
 from discord import app_commands
 from discord.ui import View, Select
 from discord import SelectOption
-from dotenv import load_dotenv
 from backend.create_itinerary import create_itinerary
 from backend.verify_location import verify_location
-from util.getenv import getenv
-import googlemaps
 from google import genai
+from util.apikeys import guild_id, discord_token, gemini_key
 
-assert load_dotenv()
 
-guild_id = getenv("GUILD_ID")
 guild = discord.Object(id=guild_id)
-discord_token = getenv("DISCORD_TOKEN")
+
 intents = discord.Intents.default()
 bot_client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(bot_client)
 
-gmaps_key = getenv("GMAPS_KEY")
-gmaps_client = googlemaps.Client(key=gmaps_key)
-
-gemini_key = getenv("GEMINI_API_KEY")
 gemini_client = genai.Client(api_key=gemini_key)
-
 
 events = {}
 
