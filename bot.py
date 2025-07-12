@@ -1,6 +1,7 @@
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
+from backend.create_itinerary import create_itinerary
 from backend.verify_location import verify_location
 from util.getenv import getenv
 import googlemaps
@@ -37,8 +38,7 @@ async def create(interaction: discord.Interaction, location: str):
     return
   await interaction.response.send_message(f"Creating travel itinerary for {verifiedLocation}...")
   print(f"Creating travel itinerary for {verifiedLocation}...")
-  itinerary = gemini(gemini_client, verifiedLocation, "Create a travel itinerary for a given location. Keep your output under 800 characters.").text
-  assert itinerary
+  itinerary = create_itinerary(gemini_client, verifiedLocation)
   await interaction.followup.send(itinerary)
 
 
