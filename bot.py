@@ -24,7 +24,9 @@ gmaps_key = getenv("GMAPS_KEY")
 assert gmaps_key
 gmaps_client = googlemaps.Client(key=gmaps_key)
 
-gemini_client = genai.Client()
+gemini_key = getenv("GEMINI_API_KEY")
+assert gemini_key
+gemini_client = genai.Client(api_key=gemini_key)
 
 @tree.command(
     description="Create a travel itinerary with your chosen location!",
