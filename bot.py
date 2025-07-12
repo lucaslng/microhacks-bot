@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ui import View, Button
 from discord import ButtonStyle
 from backend.create_itinerary import create_itinerary
+from backend.gemini import gemini
 from backend.verify_location import verify_location
 from google import genai
 from util.apikeys import guild_id, discord_token, gemini_key
@@ -33,7 +34,14 @@ async def create(interaction: discord.Interaction, location: str, days: int):
   await interaction.response.send_message(f"Creating travel itinerary for {verified_location}...")
   print(f"Creating travel itinerary for {verified_location}...")
   itinerary = create_itinerary(gemini_client, verified_location, days)
-  await interaction.followup.send(itinerary)
+  for day in itinerary:
+    message = f"Day {day['day']} - {day['sublocation']}\n\n"
+    for activity in day['activities']:
+        description = gemini(gemini_client, f'Write a short description about the activity of {activity} in {verified_location}. Keep your response under 900 characters.').text
+        assert description
+        message += description + '\n'
+    await interaction.followup.send(message)
+#   await interaction.followup.send(str(itinerary))
   print(f"Travel itinerary for {verified_location} completed.")
 
 
