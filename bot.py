@@ -1,6 +1,7 @@
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
+from backend.verify_location import verify_location
 from util.getenv import getenv
 import googlemaps
 from google import genai
@@ -30,13 +31,15 @@ gemini_client = genai.Client(api_key=gemini_key)
 )
 @app_commands.describe(location="Your travel destination!")
 async def create(interaction: discord.Interaction, location: str):
-  await interaction.response.send_message(f"Creating travel itenary for {location}...")
-  print(f"Creating travel itenary for {location}...")
-  locations = gemini(gemini_client, f"Create a travel itenary for {location}").text
-  assert locations
-  print(locations)
-  await interaction.followup.send(locations)
-  # await interaction.followup.send("Done!")
+  verifiedLocation = verify_location(gemini_client, location)
+  if verifiedLocation is None:
+    await interaction.response.send_message(f"{location} is not a valid location!")
+    return
+  await interaction.response.send_message(f"Creating travel itinerary for {verifiedLocation}...")
+  print(f"Creating travel itinerary for {verifiedLocation}...")
+  itinerary = gemini(gemini_client, verifiedLocation, "Create a travel itinerary for a given location. Keep your output under 800 characters.").text
+  assert itinerary
+  await interaction.followup.send(itinerary)
 
 
 @bot_client.event

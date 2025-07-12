@@ -4,7 +4,7 @@ from google.genai import types
 
 def gemini(client: genai.Client, contents: types.ContentListUnion | types.ContentListUnionDict, system_instruction: types.ContentUnion = None):
 	
-	extra_instruction = "Keep your response under 800 characters. Do not use markup or special characters."
+	extra_instruction = "Do not use markup or special characters."
 	
 	if system_instruction:
 		system_instruction = (extra_instruction, system_instruction)
