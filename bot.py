@@ -2,8 +2,8 @@ import discord
 from discord import app_commands
 from dotenv import load_dotenv
 from os import getenv
-
 import googlemaps
+from google import genai
 
 assert load_dotenv()
 
@@ -22,6 +22,7 @@ gmaps_key = getenv("GMAPS_KEY")
 assert gmaps_key
 gmaps = googlemaps.Client(key=gmaps_key)
 
+client = genai.Client()
 
 @tree.command(
     description="Create a travel itinerary with your chosen location!",
