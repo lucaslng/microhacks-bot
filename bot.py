@@ -3,18 +3,24 @@ from discord import app_commands
 from dotenv import load_dotenv
 from os import getenv
 
+import googlemaps
+
 assert load_dotenv()
 
 guild_id = getenv("GUILD_ID")
 assert guild_id
 guild = discord.Object(id=guild_id)
 
-token = getenv("DISCORD_TOKEN")
-assert token
+discord_token = getenv("DISCORD_TOKEN")
+assert discord_token
 
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
+
+gmaps_key = getenv("GMAPS_KEY")
+assert gmaps_key
+gmaps = googlemaps.Client(key=gmaps_key)
 
 
 @tree.command(
@@ -33,4 +39,4 @@ async def on_ready():
   print("Ready!")
 
 
-client.run(token)
+client.run(discord_token)
