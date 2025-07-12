@@ -24,7 +24,14 @@ gmaps_key = getenv("GMAPS_KEY")
 assert gmaps_key
 gmaps_client = googlemaps.Client(key=gmaps_key)
 
-gemini_client = genai.Client()
+project = getenv("GCP_PROJECT_ID")
+assert project, "GCP_PROJECT_ID environment variable not set"
+location = getenv("GCP_LOCATION", "us-central1")
+gemini_client = genai.Client(vertexai=True, project=project, location=location)
+
+# In-memory event store
+events = []
+
 
 @tree.command(
     description="Create a travel itinerary with your chosen location!",
@@ -32,9 +39,22 @@ gemini_client = genai.Client()
 )
 @app_commands.describe(location="Your travel destination!")
 async def create(interaction: discord.Interaction, location: str):
-  await interaction.response.send_message(f"Creating travel itenary for {location}...")
-  await interaction.followup.send(gemini(gemini_client, f"Create a travel itenary for {location}").text)
-  await interaction.followup.send("Done!")
+    await interaction.response.send_message(f"Creating travel itenary for {location}...")
+    await interaction.followup.send(gemini(gemini_client, f"Create a travel itenary for {location}").text)
+    await interaction.followup.send("Done!")
+
+
+@tree.command(
+    description="Add a new event",
+    guild=guild
+)
+@app_commands.describe(
+    name="Event name",
+    date="Event date"
+)
+async def add_event(interaction: discord.Interaction, name: str, date: str):
+    events.append({"name": name, "date": date})
+    await interaction.response.send_message(f"Event '{name}' on {date} added!")
 
 
 @bot_client.event
