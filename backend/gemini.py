@@ -7,7 +7,7 @@ def gemini(client: genai.Client, contents: types.ContentListUnion | types.Conten
       model="gemini-2.5-flash",
       contents=contents,
       config=types.GenerateContentConfig(
-          thinking_config=types.ThinkingConfig(
-            thinking_budget=0)  # Disables thinking
-      ),
+        thinking_config=types.ThinkingConfig(
+          thinking_budget=0)  # Disables thinking
+          ),
   )
