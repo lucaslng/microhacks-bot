@@ -8,13 +8,13 @@ from backend.itinerary_functions.location_functions import get_restauraunts, get
 # import backend.itinerary_functions.directions_function
 
 
-def create_itinerary(client: genai.Client, location: str) -> str:
+def create_itinerary(client: genai.Client, location: str, days: int) -> str:
 
 	place_id = get_place_id(location)
 
-	contents = f"{location}\n{place_id}"
+	contents = f"{location}\n{place_id}\n{days}"
 
-	config = types.GenerateContentConfig(tools=[get_temperature, get_restauraunts, get_place], system_instruction="Create a travel itinerary for {{location}}. Return it strictly as JSON in this shape:\n{\n  \"itinerary\": [\n    { \"day\": \"Day 1–3\", \"location\": \"Los Angeles, CA\", \"activities\": [\"Explore Hollywood\",\"Santa Monica Pier\",\"Griffith Observatory\",\"Universal Studios Hollywood or Disneyland\"] }\n  ]\n}\n Do not ask for more information. You will be given the name of the location and then the google maps place_id of the location on seperate lines. Use the place_id with the functions to gain more information and find restauraunts along the route. Keep your output under 900 characters. Do not use markup or special characters.",
+	config = types.GenerateContentConfig(tools=[get_temperature, get_restauraunts, get_place], system_instruction="Create a travel itinerary for {{location}}. Return it strictly as JSON in this shape:\n{\n  \"itinerary\": [\n    { \"day\": \"Day 1\", \"location\": \"Los Angeles, CA\", \"activities\": [\"Explore Hollywood\",\"Santa Monica Pier\",\"Griffith Observatory\",\"Universal Studios Hollywood or Disneyland\"] }\n  ]\n}\n Do not ask for more information. You will be given the name of the location and then the google maps place_id of the location then the number of days on seperate lines.  Use the place_id with the functions to gain more information and find restauraunts along the route. Keep your output under 900 characters. Do not use markup or special characters.",
 	                                     thinking_config=types.ThinkingConfig(
 	  thinking_budget=0)  # Disables thinking
 	  )

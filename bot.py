@@ -23,7 +23,8 @@ events = {}
     guild=guild,
 )
 @app_commands.describe(location="Your travel destination!")
-async def create(interaction: discord.Interaction, location: str):
+@app_commands.describe(days="The length of your vacation!")
+async def create(interaction: discord.Interaction, location: str, days: int):
   verified_location = verify_location(gemini_client, location)
   if verified_location is None:
     await interaction.response.send_message(f"{location} is not a valid location!")
@@ -31,7 +32,7 @@ async def create(interaction: discord.Interaction, location: str):
     return
   await interaction.response.send_message(f"Creating travel itinerary for {verified_location}...")
   print(f"Creating travel itinerary for {verified_location}...")
-  itinerary = create_itinerary(gemini_client, verified_location)
+  itinerary = create_itinerary(gemini_client, verified_location, days)
   await interaction.followup.send(itinerary)
   print(f"Travel itinerary for {verified_location} completed.")
 

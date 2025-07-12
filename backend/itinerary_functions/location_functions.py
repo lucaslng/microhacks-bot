@@ -3,7 +3,7 @@ from util.apikeys import gmaps_key
 
 
 def get_restauraunts(place_id: str, radius: int) -> list:
-  """Gets the restauraunts within a given location.
+  """Finds the restauraunts nearby a given location with a place_id.
 
   Args:
       place_id: The google maps place_id of the location to find restauraunts around, e.g. ChIJiQHsW0m3j4ARm69rRkrUF3w
