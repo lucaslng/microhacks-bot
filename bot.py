@@ -5,25 +5,32 @@ from backend.verify_location import verify_location
 from util.getenv import getenv
 import googlemaps
 from google import genai
+
 from backend.gemini import gemini
 
 assert load_dotenv()
 
-# setup discord bot
 guild_id = getenv("GUILD_ID")
+assert guild_id
 guild = discord.Object(id=guild_id)
+
 discord_token = getenv("DISCORD_TOKEN")
+assert discord_token
+
 intents = discord.Intents.default()
 bot_client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(bot_client)
 
-# setup google maps api client
 gmaps_key = getenv("GMAPS_KEY")
+assert gmaps_key
 gmaps_client = googlemaps.Client(key=gmaps_key)
 
-# setup gemini api client
-gemini_key = getenv("GEMINI_API_KEY")
-gemini_client = genai.Client(api_key=gemini_key)
+project = getenv("GCP_PROJECT_ID")
+assert project, "GCP_PROJECT_ID environment variable not set"
+location = getenv("GCP_LOCATION", "us-central1")
+gemini_client = genai.Client(vertexai=True, project=project, location=location)
+
+events = {}  
 
 @tree.command(
     description="Create a travel itinerary with your chosen location!",
@@ -41,6 +48,49 @@ async def create(interaction: discord.Interaction, location: str):
   assert itinerary
   await interaction.followup.send(itinerary)
 
+
+@tree.command(
+    description="Add a new event",
+    guild=guild
+)
+@app_commands.describe(
+    name="Event name",
+    date="Event date"
+)
+async def add_event(interaction: discord.Interaction, name: str, date: str):
+    user_id, user_name= str(interaction.user.id), str(interaction.user.global_name)
+
+    if str(user_id) not in events:
+        events[user_id] = []
+
+    events[user_id].append({"name": name, "date": date})
+    await interaction.response.send_message(f"Event '{name}' on {date} added for {user_name}!")
+
+@tree.command (
+    description="List all of your events",
+    guild=guild
+)
+async def list_events(interaction: discord.Interaction):
+    user_id = str(interaction.user.id)
+    user_events = events.get(user_id, [])
+
+    if not user_events:
+        await interaction.response.send_message("You have no events.")
+        return
+    
+    embed = discord.Embed(title="Your Events")
+    embed.set_author(
+        name=interaction.user.global_name,
+        icon_url=interaction.user.display_avatar.url
+    )
+
+    for event in user_events:
+        embed.add_field(
+            name=event["name"],
+            value=event["date"],
+            inline=False
+        )
+    await interaction.response.send_message(embed=embed)
 
 @bot_client.event
 async def on_ready():
