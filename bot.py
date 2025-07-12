@@ -5,30 +5,22 @@ from backend.verify_location import verify_location
 from util.getenv import getenv
 import googlemaps
 from google import genai
-
 from backend.gemini import gemini
 
 assert load_dotenv()
 
 guild_id = getenv("GUILD_ID")
-assert guild_id
 guild = discord.Object(id=guild_id)
-
 discord_token = getenv("DISCORD_TOKEN")
-assert discord_token
-
 intents = discord.Intents.default()
 bot_client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(bot_client)
 
 gmaps_key = getenv("GMAPS_KEY")
-assert gmaps_key
 gmaps_client = googlemaps.Client(key=gmaps_key)
 
-project = getenv("GCP_PROJECT_ID")
-assert project, "GCP_PROJECT_ID environment variable not set"
-location = getenv("GCP_LOCATION", "us-central1")
-gemini_client = genai.Client(vertexai=True, project=project, location=location)
+gemini_key = getenv("GEMINI_API_KEY")
+gemini_client = genai.Client(api_key=gemini_key)
 
 events = {}  
 
@@ -41,6 +33,7 @@ async def create(interaction: discord.Interaction, location: str):
   verifiedLocation = verify_location(gemini_client, location)
   if verifiedLocation is None:
     await interaction.response.send_message(f"{location} is not a valid location!")
+    print(f"invalid location: {location}")
     return
   await interaction.response.send_message(f"Creating travel itinerary for {verifiedLocation}...")
   print(f"Creating travel itinerary for {verifiedLocation}...")
