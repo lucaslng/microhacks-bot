@@ -1,31 +1,27 @@
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
-from os import getenv
+from util.getenv import getenv
 import googlemaps
 from google import genai
-
 from backend.gemini import gemini
 
 assert load_dotenv()
 
+# setup discord bot
 guild_id = getenv("GUILD_ID")
-assert guild_id
 guild = discord.Object(id=guild_id)
-
 discord_token = getenv("DISCORD_TOKEN")
-assert discord_token
-
 intents = discord.Intents.default()
 bot_client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(bot_client)
 
+# setup google maps api client
 gmaps_key = getenv("GMAPS_KEY")
-assert gmaps_key
 gmaps_client = googlemaps.Client(key=gmaps_key)
 
+# setup gemini api client
 gemini_key = getenv("GEMINI_API_KEY")
-assert gemini_key
 gemini_client = genai.Client(api_key=gemini_key)
 
 @tree.command(
