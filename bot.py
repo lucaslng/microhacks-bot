@@ -36,12 +36,9 @@ async def create(interaction: discord.Interaction, location: str, days: int):
   itinerary = create_itinerary(gemini_client, verified_location, days)
   for day in itinerary:
     message = f"Day {day['day']} - {day['sublocation']}\n\n"
-    for activity in day['activities']:
-        description = gemini(gemini_client, f'Write a short description about the activity of {activity} in {verified_location}. Keep your response under 900 characters.').text
-        assert description
-        message += description + '\n'
+    for activity, description in day['activities'].items():
+        message += activity + '\n' + description + '\n\n'
     await interaction.followup.send(message)
-#   await interaction.followup.send(str(itinerary))
   print(f"Travel itinerary for {verified_location} completed.")
 
 
