@@ -5,6 +5,8 @@ from os import getenv
 import googlemaps
 from google import genai
 
+from backend.gemini import gemini
+
 assert load_dotenv()
 
 guild_id = getenv("GUILD_ID")
@@ -31,6 +33,7 @@ gemini_client = genai.Client()
 @app_commands.describe(location="Your travel destination!")
 async def create(interaction: discord.Interaction, location: str):
   await interaction.response.send_message(f"Creating travel itenary for {location}...")
+  await interaction.followup.send(gemini(gemini_client, f"Create a travel itenary for {location}").text)
   await interaction.followup.send("Done!")
 
 
