@@ -1,7 +1,7 @@
 from google import genai
 from google.genai import types
 
-from backend.itinerary_functions.weather_function import get_temperature
+from backend.itinerary_functions.temperature_function import get_temperature
 
 
 def create_itinerary(client: genai.Client, location: str) -> str:
