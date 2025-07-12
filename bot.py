@@ -15,14 +15,14 @@ discord_token = getenv("DISCORD_TOKEN")
 assert discord_token
 
 intents = discord.Intents.default()
-client = discord.Client(intents=intents)
-tree = app_commands.CommandTree(client)
+bot_client = discord.Client(intents=intents)
+tree = app_commands.CommandTree(bot_client)
 
 gmaps_key = getenv("GMAPS_KEY")
 assert gmaps_key
-gmaps = googlemaps.Client(key=gmaps_key)
+gmaps_client = googlemaps.Client(key=gmaps_key)
 
-client = genai.Client()
+gemini_client = genai.Client()
 
 @tree.command(
     description="Create a travel itinerary with your chosen location!",
@@ -34,10 +34,10 @@ async def create(interaction: discord.Interaction, location: str):
   await interaction.followup.send("Done!")
 
 
-@client.event
+@bot_client.event
 async def on_ready():
   await tree.sync(guild=guild)
   print("Ready!")
 
 
-client.run(discord_token)
+bot_client.run(discord_token)
