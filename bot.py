@@ -7,6 +7,7 @@ assert load_dotenv()
 
 guild_id = getenv("GUILD_ID")
 assert guild_id
+guild = discord.Object(id=guild_id)
 
 token = getenv("DISCORD_TOKEN")
 assert token
@@ -18,15 +19,17 @@ tree = app_commands.CommandTree(client)
 
 @tree.command(
     description="Create a travel itinerary with your chosen location!",
-    guild=discord.Object(id=guild_id),
+    guild=guild,
 )
-async def create(interaction):
-  await interaction.response.send_message("Creating travel itenary for (location)...")
+@app_commands.describe(location="Your travel destination!")
+async def create(interaction: discord.Interaction, location: str):
+  await interaction.response.send_message(f"Creating travel itenary for {location}...")
+  await interaction.followup.send("Done!")
 
 
 @client.event
 async def on_ready():
-  await tree.sync(guild=discord.Object(id=guild_id))
+  await tree.sync(guild=guild)
   print("Ready!")
 
 
