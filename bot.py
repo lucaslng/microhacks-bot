@@ -35,8 +35,12 @@ gemini_client = genai.Client(api_key=gemini_key)
 @app_commands.describe(location="Your travel destination!")
 async def create(interaction: discord.Interaction, location: str):
   await interaction.response.send_message(f"Creating travel itenary for {location}...")
-  await interaction.followup.send(gemini(gemini_client, f"Create a travel itenary for {location}").text)
-  await interaction.followup.send("Done!")
+  print(f"Creating travel itenary for {location}...")
+  locations = gemini(gemini_client, f"Create a travel itenary for {location}").text
+  assert locations
+  print(locations)
+  await interaction.followup.send(locations)
+  # await interaction.followup.send("Done!")
 
 
 @bot_client.event
