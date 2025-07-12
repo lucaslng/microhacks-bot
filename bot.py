@@ -8,7 +8,6 @@ from backend.verify_location import verify_location
 from util.getenv import getenv
 import googlemaps
 from google import genai
-from backend.gemini import gemini
 
 assert load_dotenv()
 
