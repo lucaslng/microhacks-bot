@@ -1,5 +1,6 @@
 from google import genai
 from google.genai import types
+import json
 
 from backend.geocoder import get_place_id
 from backend.itinerary_functions.temperature_function import get_temperature
@@ -12,7 +13,7 @@ def create_itinerary(client: genai.Client, location: str) -> str:
 
 	contents = f"{location}\n{place_id}"
 
-	config = types.GenerateContentConfig(tools=[get_temperature], system_instruction="You will be given two lines of input. The first line is the name of a location. The second line is the google maps place_id of that location. Create a travel itinerary for the given location. Do not ask for more information, just create an itinerary. Keep your output under 900 characters. Do not use markup or special characters.",
+	config = types.GenerateContentConfig(tools=[get_temperature], system_instruction="Create a travel itinerary for {{location}}. Return it strictly as JSON in this shape:\n{\n  \"itinerary\": [\n    { \"day\": \"Day 1–3\", \"location\": \"Los Angeles, CA\", \"activities\": [\"Explore Hollywood\",\"Santa Monica Pier\",\"Griffith Observatory\",\"Universal Studios Hollywood or Disneyland\"] }\n  ]\n}\n Do not ask for more information. Keep your output under 900 characters. Do not use markup or special characters.",
 	                                     thinking_config=types.ThinkingConfig(
 	  thinking_budget=0)  # Disables thinking
 	  )
@@ -23,5 +24,6 @@ def create_itinerary(client: genai.Client, location: str) -> str:
 	    config=config
 	)	
 	itinerary = response.text
+	
 	assert itinerary
 	return itinerary
